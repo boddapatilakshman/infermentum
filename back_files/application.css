@@ -1,0 +1,174 @@
+.cart-blk button:after{
+    content: attr(data-content) '' !important;
+}
+.error { color: #ff0000; font-size: 12px;}
+
+#rivenditori_loader { display: none;}
+#rivenditori_error { display: none;}
+
+#rivenditori_message { font-size: 24px;min-height: 280px;}
+#rivenditori_error_message { font-size: 24px;color: red;min-height: 280px;}
+
+#map_container { width: 100%;height: 100%; }
+#map_canvas { width: 100%;height: 100%; }
+
+#form-contatti-status { text-align: center; font-weight: bold;}
+#form-contatti-progress { display: none; }
+#form-contatti-success { display: none; }
+#form-contatti-error { display: none; }
+
+#login-form-status { text-align: center; font-weight: bold;}
+#login-form-progress { display: none; }
+#login-form-success { display: none; }
+#login-form-error { display: none; }
+
+#registrazione-form-status { text-align: center; font-weight: bold;}
+#registrazione-form-progress { display: none; }
+#registrazione-form-success { display: none; }
+#registrazione-form-error { display: none; }
+
+.azienda { display: none;}
+.spedizione { display: none;}
+.fatturazione-estero { display: none;}
+.spedizione-estero { display: none;}
+.destinatario-estero { display: none;}
+
+#checkout-form-status { text-align: center; font-weight: bold;}
+#checkout-form-progress { display: none; }
+#checkout-form-success { display: none; }
+#checkout-form-error { display: none; }
+
+#coupon-form-status { text-align: left; font-weight: bold;}
+#coupon-form-progress { display: none; }
+#coupon-form-success { display: none; }
+#coupon-form-error { display: none; }
+
+#promo-form-status { text-align: center; font-weight: bold;}
+#promo-form-progress { display: none; }
+#promo-form-success { display: none; }
+#promo-form-error { display: none; }
+
+#modifica-password-form-status { text-align: center; font-weight: bold;}
+#modifica-password-form-progress { display: none; }
+#modifica-password-form-success { display: none; }
+#modifica-password-form-error { display: none; }
+
+#modifica-anagrafica-form-status { text-align: center; font-weight: bold;}
+#modifica-anagrafica-form-progress { display: none; }
+#modifica-anagrafica-form-success { display: none; }
+#modifica-anagrafica-form-error { display: none; }
+
+#recupera-password-form-status { text-align: center; font-weight: bold;}
+#recupera-password-form-progress { display: none; }
+#recupera-password-form-success { display: none; }
+#recupera-password-form-error { display: none; }
+
+#resetta-password-form-status { text-align: center; font-weight: bold;}
+#resetta-password-form-progress { display: none; }
+#resetta-password-form-success { display: none; }
+#resetta-password-form-error { display: none; }
+
+#toast-container > div { background-color: #ffffff; color: #000000;padding: 15px 15px 15px 15px;text-align: center;opacity: 1;-ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);filter: alpha(opacity=100);}
+#toast-container > .toast-info {background-image: none !important;box-shadow: none !important;border: 1px solid #000 !important;}
+.toast-message {color: #000000;}
+.toast-top-right {top: 60px;right: 25px;}
+
+.form-value {font-weight: bold;}
+
+.address-container div {border: 1px solid #000000;padding: 10px;min-height: 140px;}
+
+.legal-link {color: #fff;font-size: 12px;}
+
+.swal2-container {z-index: 1000000;}
+.swal2-styled.swal2-confirm {border-left-color: #000 !important;border-right-color: #000 !important;background-color: #000 !important;box-shadow: none !important;}
+
+.bottom-btn-area-riservata {margin-top: 20px;}
+
+.spedizioni_methods > .wc_spedizioni_method > label:before{display:inline-block;font-family: "Font Awesome 5 Pro";font-size:inherit;text-rendering:auto;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;content:"\f111";margin-right:.55em;transition:color,ease,.2s;line-height:24px}
+.spedizioni_methods .wc_spedizioni_method > input[type=radio]:first-child{clip:rect(1px 1px 1px 1px);clip:rect(1px,1px,1px,1px);position:absolute!important}
+.spedizioni_methods .wc_spedizioni_method > input[type=radio]:first-child:checked + label:before{content:"\f192"}
+
+.spedizioni_methods{padding:0;}
+.spedizioni_methods > .wc_spedizioni_method > label{display:block;cursor:pointer;font-weight:500;margin-bottom:0;color:#444}
+
+#fatturazione-ritiro-spedizione-error { display: block;}
+#fatturazione-id-tipo-error { display: block;}
+#checkout-termin-condizioni-error { margin-left: -20px;}
+#contatti-privacy-error { margin-left: -20px;}
+#registrazione-privacy-error { margin-left: -20px;}
+
+.indirizzi-commands {position: absolute;width: 100%;}
+.indirizzi-commands a {color: #000;margin-left: 10px;}
+.pr-ck-blk { clear: both; }
+
+#form-indirizzo-status { text-align: center; font-weight: bold;}
+#form-indirizzo-progress { display: none; }
+#form-indirizzo-success { display: none; }
+#form-indirizzo-error { display: none; }
+
+#rivenditori_search_starter.disabled {
+    pointer-events: none;
+    cursor: default;
+    background: #dfdfdf !important;
+}
+
+#rivenditori_search_radius {
+    width: 100px !important;
+}
+@media (max-width: 728px) {
+    #rivenditori_search_radius {
+        width: 100% !important;
+    }
+}
+
+#mc_embed_signup .mc-field-group label {
+    font-size: 15px;
+}
+
+.lang-selector {
+    font-size: 26px !important;
+}
+
+.lang-selector a {
+    font-size: 26px !important;
+}
+
+.carrello-titolo_prodotto {text-align: left;left:0px;width: 100%;display: block;position: absolute;font-size: 15px;color: #1B1B21; font-family: 'ITC Avant Garde Gothic Std Demi';top: -20px;}
+
+
+.solo-desktop-m {display:contents;}
+.solo-mobile-m {display:none;}
+.font-piccolo {font-size:20px !important;}
+
+@media (max-width: 728px) {
+    .carrello-titolo_prodotto {font-size: 13px; text-align:center; margin-top:20px;}
+	.carrello-titolo-prodotto span {font-family: 'ITC Avant Garde Gothic Std book';}
+	.immagine-carrello {padding-top:30px;}
+	.immagine-carrello img {margin-left:-15px;}
+	.spazio-mobile {height:20px; border-bottom:1px solid #000; margin-left:5px; margin-right:5px; margin-bottom:5px;}
+	.spazio-mobile-veloce {height:20px; border-bottom:1px solid #000; margin-left:5px; margin-right:5px; margin-bottom:20px;}
+	.solo-desktop-m {display:none;}
+	.solo-mobile-m {display:block;}
+	.togli-mobile {display:none;}
+	.no-pt-mobile {padding-top:0;}
+	.mb-mobile {margin-bottom:15px;}
+	.aggiungi-mb-mobile {margin-bottom:20px;}
+	#ordine-veloce {padding-left:20px !important; padding-right:20px !important;}
+	.font-piccolo {font-size:16px !important;}
+	.margine-veloce-mobile {margin-bottom: 0 !important;margin-top: 25px !important;}
+	/*.bt-left-mobile {padding:0; float:left; margin-bottom:20px;}
+	.bt-right-mobile {padding:0; float:right; margin-bottom:20px;}*/
+}
+
+@media (max-width:543px){.hidden-xs-down{display:none!important}}
+
+@media (min-width: 320px) and (max-width: 767px) {
+	.modifica-anagrafica-btn {width:auto !important; padding-left:20px; padding-right:20px;}
+}
+
+#codice-registrazione-progress { display: none;}
+#codice-registrazione-success { display: none;}
+
+input.checkout-datepicker:read-only {
+	background-color: #ffffff;
+}

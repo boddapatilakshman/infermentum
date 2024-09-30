@@ -1,0 +1,281 @@
+*{
+    border: 0%;
+    padding: 0%;
+    margin: 0%;
+}
+body{
+    background-image: url(./back\ groundimage.jpg);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+}
+.logo{
+    padding-top: 20px;
+    padding-left: 30px; 
+}
+.main{
+    position: relative;
+    width: 50%;
+    height: 100vh;
+    background-color: hotpink;
+}
+.bis1{
+    position: relative;
+    top: 0px;
+    padding-left: 80px;
+}
+.content1{
+    background-color: white;
+    width: 50%;
+    height: 100vh;
+    position: absolute;
+    left: 675px;
+    top: 0%;
+}
+.navli{
+    top: 30px;
+    position: relative;
+     left: 200px;
+     display: flex;
+     gap: 30px;
+}
+.navli li{
+    list-style-type: none;
+}
+.nav li a{
+    justify-content: space-between;
+}
+.pa{
+    width: 450px;
+    left: 100px;
+    top: 50px;
+    position: relative;
+}
+.pa strong{
+    font-size: 40px;
+}
+.pa p{
+    font-size: 20px;
+}
+.itm1{
+    display: flex;
+   position: relative;
+   top: 50px;
+   left: 80px;
+}
+.icons{
+    padding-left: 30px;
+    position: fixed;
+}
+.Quantity{
+    position: relative;
+    top: 70px;
+    left: 40px;
+}
+.Price{
+    position: relative;
+    top: 70px;
+    left: 60px;
+}
+.butt{
+     position: relative;
+     top: 70px;
+     left: 90px;
+     color: white;
+}
+.dess1{
+    position: relative;
+    left: 550px;
+}
+.dess{
+    position: fixed;
+}
+.space{
+    height: 100vh;
+    width: 100wh;
+}
+.pag1{
+    margin-bottom: 5px;
+}
+.nutr{
+    border: 0%;
+    padding: 0%;
+    height: 100vh;
+    width: 100vw;
+    background-color: chocolate;
+    margin-bottom: 5px;
+}
+.nutr p{
+    font-size: 20px;
+}
+.energy{
+    margin-left: 60px;
+    height: 100vh;
+    width: 40%;
+}
+.energy h1{
+    font-size: 60px;
+}
+.container{
+    display: flex;
+    justify-content: space-between;
+}
+.pre2{
+    width: 100%;
+    align-content: center;
+}
+.pre2 .h2{
+    margin-left: 50%;
+}
+.pre2 p{
+    margin-left: 200px;
+}
+.pagimg{
+   height: 100vh;
+   width: 50%;
+   position: absolute;
+   left: 800px;
+   top: 1400px;
+}
+.pag4{
+    height: 150vh;
+    width: 100%;
+    background-color: white;
+    margin-top: 5px;
+}
+.pag4 pre{
+    font-size: 17px;
+}
+.line1{
+    width: 80%;
+    display: flex;
+    position: relative;
+    top: 10px;
+    left: 150px;
+    justify-content: space-between;
+}
+.line2{
+    display: flex;
+    top: 60px;
+    left: 250px;
+    width: 60%;
+    justify-content: space-between;
+    position: relative;
+}
+.img1{
+    position: relative;
+    display: inline-block;
+}
+.img2{
+    position: relative;
+    display: inline-block;
+}
+.img3{
+    position: relative;
+    display: inline-block;
+}
+.img4{
+    position: relative;
+    display: inline-block;
+}
+.img5{
+    position: relative;
+    display: inline-block;
+}
+.img6{
+    position: relative;
+    display: inline-block;
+}
+.img7{
+    position: relative;
+    display: inline-block;
+}
+.img12{
+    display: none;
+    position: absolute;
+
+}
+.img2:hover{
+    cursor: pointer;
+}
+.img2:hover .img11{
+    display: none;
+}
+.img2:hover .img12{
+    display: block;
+}
+
+.img3:hover{
+    cursor: pointer;
+}
+.img3:hover .img11{
+    display: none;
+}
+.img3:hover .img12{
+    display: block;
+}
+.img4:hover{
+    cursor: pointer;
+}
+.img4:hover .img11{
+    display: none;
+}
+.img4:hover .img12{
+    display: block;
+}
+.img5:hover{
+    cursor: pointer;
+}
+.img5:hover .img11{
+    display: none;
+}
+.img5:hover .img12{
+    display: block;
+}
+.img6:hover{
+    cursor: pointer;
+}
+.img6:hover .img11{
+    display: none;
+}
+.img6:hover .img12{
+    display: block;
+}
+.img7:hover{
+    cursor: pointer;
+}
+.img7:hover .img11{
+    display: none;
+}
+.img7:hover .img12{
+    display: block;
+}
+.footer{
+    position: relative;
+    width: 100%;
+    height: 70vh;
+    background-color: rgb(212, 211, 124);
+    color: white;
+}
+.logo2{
+    position: relative;
+    color: white;
+    position: relative;
+}
+.foo{
+    display: flex;
+    margin-left: 200px;
+}
+.one{
+  margin-left: 100px;
+}
+.two{
+    margin-left: 100px;
+}
+.google{
+
+}
+.logo2{
+    color: white;
+}

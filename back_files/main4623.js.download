@@ -1,0 +1,112 @@
+$(document).ready(function() {
+    var is_clicked_menu = false;
+
+ 
+
+
+
+    var $window = $(window),
+        $slick = $('.about-us-slick'),
+        $slick_main = $('.slider-rwd-main'),
+        toggleSlick;
+    toggleSlick = function() {
+        if ($window.width() >= 992) {
+            $slick.slick("unslick");
+            $slick_main.slick("unslick");
+            $slick_main.addClass('slider-rwd-main_after-unslick');
+        } else {
+            $slick_main.slick("unslick");
+            $slick_main.removeClass('slider-rwd-main_after-unslick');
+            $slick_main.slick({
+                dots: true,
+                infinite: true,
+                speed: 600,
+                autopalay: true,
+                autoplaySpeed: 5000,
+                arrows: false
+            });
+            $slick.slick("unslick");
+            $slick.slick({
+                dots: true,
+                infinite: true,
+                speed: 600,
+                autopalay: true,
+                autoplaySpeed: 5000,
+                arrows: false
+            });
+        }
+    };
+    bannerHomePosition = function() {
+        var width_window = $window.width();
+        var height_window = 1080;
+        var image_height = 1080;
+        var image_width = 1920;
+        var container = $('footer .container').width();
+        var image_after_scale = height_window * image_width / image_height;
+        var diff = (width_window - image_after_scale) / 2;
+        $('.panel-left2').css('background-position-x', diff);
+        var left_position = (width_window - container) / 2;
+        $('.desktop__content--bakery').css('left', left_position + 20);
+    };
+    $window.resize(toggleSlick);
+    $window.resize(bannerHomePosition);
+    toggleSlick();
+    bannerHomePosition();
+    $('.desktop__content--bakery .slide__content').css('opacity', '1');
+    $('.expert-more-click').click(function() {
+        $('.experts-custom-tabs li').removeClass('active');
+    });
+    $("#toAdvantages").click(function(e) {
+        e.preventDefault();
+        $('html, body').animate({
+            scrollTop: $("#advantages").offset().top - 50
+        }, 700);
+    });
+});
+
+
+
+var $window2 = $(window)
+bannerHomeAnimation = function() {
+    var width_window = $window2.width();
+    var height_window = 720;
+    var image_height = 720;
+    var image_width = 1024;
+    var container = $('footer .container').width();
+    var image_after_scale = height_window * image_width / image_height;
+    var diff = (width_window - image_after_scale) / 2;
+    var left_position = (width_window - container) / 2;
+    var container_size_animate = $('.slider-d-main .container').width();
+    var box_size = 1920;
+    var box_beatween = (container_size_animate - (box_size * 2)) / 2;
+    var box_beatween_all = container_size_animate - (box_size * 2);
+    var left_animation_area = left_position + box_size;
+    var right_animation_area = box_beatween_all + box_size;
+    $('.l-animate').on("mousemove", function(e) {
+        if (e.pageX <= left_animation_area) {
+            var text_box_width = $('.slide__content--bakery').outerWidth();
+            var container_wrap = $('footer .container').innerWidth();
+            var body_width = $('body').width();
+            var half_outter = (body_width - container_wrap) / 2;
+            var to_applay = half_outter + text_box_width;
+            $('.panel-left2').css('width', to_applay + text_box_width);
+        } else {
+            $('.panel-left2').css('width', '50%');
+        }
+    });
+    $('.r-animate').on("mousemove", function(e) {
+        if (e.pageX >= right_animation_area) {
+            var text_box_width = $('.slide__content--bakery').outerWidth();
+            var container_wrap = $('footer .container').innerWidth();
+            var body_width = $('body').width();
+            var half_outter = (body_width - container_wrap) / 2;
+            var to_applay = half_outter + text_box_width;
+            $('.panel-left2').css('width', to_applay + 30);
+        } else {
+            $('.panel-left2').css('width', '50%');
+        }
+    });
+};
+
+$window2.resize(bannerHomeAnimation);
+bannerHomeAnimation();

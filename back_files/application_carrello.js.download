@@ -1,0 +1,1076 @@
+function start_session_wakeup() {
+    setInterval(function () {
+        $.get(url_application_carrello,"action=sesswakeup" , function (response) {}, "json");
+    }, 60000)
+}
+
+function show_cart_message() {
+    toastr.options.positionClass = "toast-top-right";
+    // toastr.options.preventDuplicates = true;
+    toastr.options.newestOnTop = false;
+    toastr.options.closeDuration = 5;
+    toastr.options.timeOut = 2000;
+    // toastr.options.timeOut = 800000;
+    toastr.info(str_prodotto_aggiunto_al_carrello);
+}
+
+function show_cart_remove_message() {
+    toastr.options.positionClass = "toast-top-right";
+    // toastr.options.preventDuplicates = true;
+    toastr.options.newestOnTop = false;
+    toastr.options.closeDuration = 5;
+    toastr.options.timeOut = 2000;
+    // toastr.options.timeOut = 800000;
+    toastr.info(str_prodotto_rimosso_dal_carrello);
+}
+
+function show_cart_promo_removed(response) {
+    if(typeof response['removed_promos'] === "object") {
+        if(typeof response['removed_promos']['coupon'] === "object" && response['removed_promos']['coupon'].length) {
+                Swal.fire({
+                    title: str_attenzione,
+                    text: response['removed_promos_message'],
+                    confirmButtonText: 'Ok'
+                }).then(function () {
+                    document.location.reload();
+                });
+                return;
+
+        } else if(typeof response['removed_promos']['promozioni'] === "object" && response['removed_promos']['promozioni'].length) {
+            Swal.fire({
+                title: str_attenzione,
+                text: response['removed_promos_message'],
+                confirmButtonText: 'Ok'
+            }).then(function () {
+                document.location.reload();
+            });
+            return;
+
+        }
+    }
+}
+
+function send_coupon_data() {
+    if($("#coupon-request-confirm").length) {
+        Swal.fire(
+            {
+                title: str_attenzione,
+                text: str_il_coupon_sostituira_la_promozione,
+                showCancelButton: true,
+                confirmButtonText: str_applica_il_codice_coupon,
+                cancelButtonText: str_tieni_la_promozione,
+                width: 720
+            }).then(function (result) {
+                if (result.value) {
+                    send_form_coupon();
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                }
+            }
+        );
+    } else {
+        send_form_coupon();
+    }
+    return false;
+}
+
+function load_cart_header(callback) {
+    $.get(url_application_carrello,"action=load_cart_header" , function (response) {
+        if(response['status']) {
+
+            $(".cart-blk").addClass("cart-filled");
+            $(".cart-blk button").attr('data-content',response['new_id']);
+
+            $(".cart-grand-total").html(response['new_id2']);
+            $(".cart-product-count").html(response['new_id']);
+
+        } else {
+            $(".cart-blk").removeClass("cart-filled");
+            $(".cart-blk button").attr('data-content','');
+            $(".cart-grand-total").html("-");
+            $(".cart-product-count").html("-");
+        }
+
+        if (typeof callback !== 'undefined') {
+            callback();
+        }
+    }, "json");
+}
+
+function add_cart_product(id_product,qty,callback) {
+    $.post(url_application_carrello,"action=update_row&id_product="+id_product+"&qty="+qty , function (response) {
+        if(response['status']) {
+            show_cart_message();
+            callback();
+            load_cart_header();
+            show_cart_promo_removed(response)
+            send_gtag_data("event","add_to_cart",
+                    {
+                        "items": [
+                            {
+                                "id": response['list'].id_prodotto,
+                                "name": response['list'].nome
+                            }
+                        ]
+                    }
+
+                );
+            send_ads_data("event","add_to_cart",
+                {
+                    'send_to': GOOGLE_ADS_KEY,
+                    "items": [
+                        {
+                            "id": response['list'].id_prodotto,
+                            "name": response['list'].nome,
+                            "google_business_vertical": "retail"
+                        }
+                    ]
+                }
+            );
+
+            send_facebook_data('track','AddToCart', {
+                content_ids: response['list'].id_prodotto,
+                content_type: 'product'
+            });
+        } else {
+            Swal.fire({
+                title: str_attenzione,
+                text: response['errmsg'],
+                confirmButtonText: 'Ok'
+            });
+        }
+    }, "json");
+}
+
+function set_cart_product(id_product,qty,callback,failure_callback) {
+    $.post(url_application_carrello,"action=set_row&id_product="+id_product+"&qty="+qty , function (response) {
+        if(response['status']) {
+            if(response['removed']) {
+                send_gtag_data("event","remove_from_cart",
+                    {
+                        "items": [
+                            {
+                                "id": response['list'].id_prodotto,
+                                "name": response['list'].nome
+                            }
+                        ]
+                    }
+
+                );
+                show_cart_remove_message();
+
+            } else {
+                send_gtag_data("event","add_to_cart",
+                    {
+                        "items": [
+                            {
+                                "id": response['list'].id_prodotto,
+                                "name": response['list'].nome,
+                                "google_business_vertical": "retail"
+                            }
+                        ]
+                    }
+
+                );
+                send_ads_data("event","add_to_cart",
+                    {
+                        'send_to': GOOGLE_ADS_KEY,
+                        "items": [
+                            {
+                                "id": response['list'].id_prodotto,
+                                "name": response['list'].nome,
+                                "google_business_vertical": "retail"
+                            }
+                        ]
+                    });
+                send_facebook_data('track','AddToCart', {
+                    content_ids: response['list'].id_prodotto,
+                    content_type: 'product'
+                });
+                show_cart_message();
+            }
+            callback();
+            load_cart_header();
+            show_cart_promo_removed(response);
+
+        } else {
+            if (typeof failure_callback !== 'undefined') {
+                failure_callback();
+            }
+            Swal.fire({
+                title: str_attenzione,
+                text: response['errmsg'],
+                confirmButtonText: 'Ok'
+            });
+
+        }
+    }, "json");
+}
+
+
+function del_cart_product(id_product,callback) {
+    $.post(url_application_carrello,"action=del_row&id_product="+id_product , function (response) {
+        if(response['status']) {
+            callback();
+            load_cart_header();
+            show_cart_promo_removed(response)
+            send_gtag_data("event","remove_from_cart",
+                {
+                    "items": [
+                        {
+                            "id": response['list'].id_prodotto,
+                            "name": response['list'].nome,
+                        }
+                    ]
+                }
+
+            );
+        }
+    }, "json");
+}
+
+
+function remove_cart_coupon(o) {
+    $(o).html("...");
+    $.post(url_application_carrello+"?action=coupon_remove", "", function (response) {
+        if(response['status']) {
+            setTimeout(function () { document.location.reload(); }, 1000);
+        }
+    }, "json");
+}
+
+function remove_cart_promo(o,id_promozione) {
+    $(o).html("...");
+    $.post(url_application_carrello+"?action=promo_remove&id_promozione="+id_promozione, "", function (response) {
+        if(response['status']) {
+            setTimeout(function () { document.location.reload(); }, 1000);
+        }
+    }, "json");
+}
+
+function load_cart_draft() {
+
+    $.post(url_application_carrello+"?action=checkout-cart-draft", $("#checkout-form").serialize(), function (response) {
+        if(response['status']) {
+            $(".checkout-ordine-draft").html(response['html']);
+        }
+    }, "json");
+}
+
+
+function load_check_out_dates() {
+    $(".checkout-datepicker").val("");
+    $.post(url_application_carrello+"?action=checkout-dates", $("#checkout-form").serialize(), function (response) {
+        if(response['status']) {
+            if(response['new_id3'] != "") {
+                $("#prosegui-acquisto-products-container").html(response['new_id3']);
+                $("#prosegui-acquisto-products-container").show();
+            } else {
+                $("#prosegui-acquisto-products-container").html("");
+                $("#prosegui-acquisto-products-container").hide();
+            }
+            $(".checkout-datepicker").val("");
+            $('.checkout-datepicker').datetimepicker("destroy");
+            $(".checkout-datepicker").datetimepicker({
+                viewDate: response['new_id'],
+                minDate: response['new_id'],
+                maxDate: response['new_id2'],
+                disabledDates: response['list'],
+                format: 'DD/MM/YYYY',
+                defaultDate: false,
+                useCurrent: false,
+                ignoreReadonly: true,
+                widgetPositioning: {
+                    vertical: 'top',
+                },
+            });
+
+        }
+    }, "json");
+}
+
+
+function clone_order(id,callback) {
+    $.post(url_application_carrello,"action=clone_order&x="+id , function (response) {
+        if(response['status']) {
+            if (typeof callback !== 'undefined') {
+                callback();
+            }
+            $.post(url_application_carrello,"action=fast_order" , function (response) {
+                if(response['status']) {
+
+                    $("#ordine-veloce").html(response['html']);
+                    bind_qty_events();
+                    load_cart_header(function () {
+
+                        $.fancybox.open({
+                            'src'   : '#ordine-veloce',
+                            'titleShow'  : false,
+                        });
+                    });
+                } else {
+
+                    $.fancybox.open({
+                        'src'   : '#shop-chiuso',
+                        'titleShow'  : false,
+                    });
+                }
+            }, "json");
+            // document.location.href = response['url'];
+        }
+    }, "json");
+}
+
+function doc_order(id) {
+    window.open(url_application_carrello+"?action=document_order&x="+id);
+}
+
+
+function fast_order_insert_coupon(url) {
+    var coupon_code = $("#codice-coupon").val();
+    if(coupon_code != "") {
+        $.post(url_application_carrello,"action=coupon_apply&coupon-code="+encodeURIComponent(coupon_code) , function (response) {
+            if(response['status']) {
+                document.location.href = url;
+            } else {
+                Swal.fire({
+                    title: str_attenzione,
+                    text: response['errmsg'],
+                    confirmButtonText: 'Ok'
+                });
+            }
+        }, "json");
+
+    } else {
+
+        $.post(url_application_carrello,"action=coupon_remove" , function (response) {
+            if(response['status']) {
+                document.location.href = url;
+            } else {
+                Swal.fire({
+                    title: str_attenzione,
+                    text: response['errmsg'],
+                    confirmButtonText: 'Ok'
+                });
+            }
+        }, "json");
+    }
+}
+
+
+
+function send_form_coupon(force) {
+    var force_url = "";
+    if(typeof force !== "undefined") {
+        force_url += "&force="+force
+    }
+    $("#coupon-form-messages").show();
+    $('#coupon-form-submit').attr('disabled', 'true');
+    $('#coupon-form-status').html($("#coupon-form-progress").html());
+    $.post(url_application_carrello+"?action=coupon_apply"+force_url, $("#coupon-table :input").serialize(), function (response) {
+        if(response['status']) {
+            $('#coupon-form-submit').remove();
+            $('#coupon-form-status').html($("#coupon-form-success").html());
+            setTimeout(function () {
+                $(".promo-form-container").remove();
+                $(".coupon-form-container").remove();
+                $('#coupon-form-status').html("");
+                load_cart_draft()
+            }, 1000);
+
+        } else {
+
+            if(typeof response['removed_promos'] !== "undefined") {
+                Swal.fire(
+                    {
+                        title: str_attenzione,
+                        text: response['errmsg'],
+                        showCancelButton: true,
+                        confirmButtonText: str_si,
+                        cancelButtonText: str_no
+                    }).then(function (result) {
+                        if (result.value) {
+                            send_form_coupon("true")
+                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                            $('#coupon-form-status').html("");
+                            $('#coupon-form-submit').removeAttr('disabled');
+                        }
+                    }
+                );
+            } else {
+                $("#coupon-form-error-message").html(response['errmsg']);
+                $('#coupon-form-status').html($("#coupon-form-error").html());
+                $('#coupon-form-submit').removeAttr('disabled');
+            }
+        }
+    }, "json");
+}
+
+
+function bind_qty_events() {
+
+    $('input[type="number"]').niceNumber();
+    $(".cart-qty").unbind("input");
+    $(".cart-qty").on("input",function () {
+        var o = $(this);
+
+        if(quantity_change_timeout) {
+            clearTimeout(quantity_change_timeout);
+        }
+        quantity_change_timeout = setTimeout(function () {
+            set_cart_product(o.data('product'),o.val() ,function () {
+                o.data('qta', o.val());
+            }, function () {
+                o.val(o.data('qta'));
+            });
+        }, 400);
+    });
+}
+
+var quantity_change_timeout = null;
+var indirizzo_change_timeout = null;
+$(document).ready(function () {
+
+    load_cart_header();
+
+    $(".add-cart-btn").click(function () {
+        $(".add-cart-btn").attr("disabled","disabled");
+        if(eval($("#"+$(this).data("quantity")).val())>0) {
+            add_cart_product($(this).data("product"),$("#"+$(this).data("quantity")).val(),function () {
+                $(".add-cart-btn").removeAttr("disabled");
+            });
+        } else {
+
+            Swal.fire({
+                title: str_attenzione,
+                text: str_aggiungere_almeno_un_prodotto,
+                confirmButtonText: 'Ok'
+            });
+        }
+    });
+
+
+    $(".del-cart-btn").click(function () {
+        $(".del-cart-btn").attr("disabled","disabled");
+        del_cart_product($(this).data("product"),function () {
+            document.location.reload();
+        });
+    });
+
+    bind_qty_events();
+
+    $(".cart-procedi-acquisto").click(function () {
+        $("#popup-promo-container").html("");
+        $.post(url_application_carrello,"action=checkout-promo" , function (response) {
+            if(response['status']) {
+                $("#popup-promo-container").html(response['html']);
+                bind_qty_events();
+                $(".cart-procedi-acquisto-upselling").click(function () {
+                    $.post(url_application_carrello,"action=checkout-check" , function (response) {
+                        if(response['status']) {
+                            document.location.href = response['url'];
+                        } else {
+                            Swal.fire({
+                                title: str_attenzione,
+                                text: response['errmsg'],
+                                confirmButtonText: 'Ok'
+                            });
+                        }
+                    }, "json");
+
+                });
+
+
+                $.fancybox.open({
+                    'src'   : '#upselling-popup',
+                    'titleShow'  : false,
+                });
+            } else {
+                $.post(url_application_carrello,"action=checkout-check" , function (response) {
+                    if(response['status']) {
+                        document.location.href = response['url'];
+                    } else {
+                        Swal.fire({
+                            title: str_attenzione,
+                            text: response['errmsg'],
+                            confirmButtonText: 'Ok'
+                        });
+                    }
+                }, "json");
+            }
+        }, "json");
+    });
+
+
+
+
+    $(".provincia-select").change(function () {
+        var provincia = $(this).val();
+        var o = $("#"+$(this).data("rel")+"-id-comune");
+        o.html("<option value=''>...</option>");
+        $.get(url_application_carrello,"action=load_comuni&id="+provincia , function (response) {
+            if(response['status']) {
+                var html = "<option value=''>"+str_Seleziona+"</option>";
+
+                for(var i = 0; i<response['list'].length;i++) {
+                    html += "<option value='"+response['list'][i].cod_istat_alfa+"'>"+response['list'][i].nome+"</option>";
+                }
+                o.html(html);
+            } else {
+
+            }
+        }, "json");
+        load_cart_draft();
+        load_check_out_dates();
+    });
+
+    $(".country-select").change(function () {
+       if($(this).val() == NAZIONE_ITALIA) {
+           $("."+$(this).data("rel")+"-estero").hide();
+           $("."+$(this).data("rel")+"-italia").show();
+       } else {
+           $("."+$(this).data("rel")+"-italia").hide();
+           $("."+$(this).data("rel")+"-estero").show();
+       }
+
+        if($(this).attr("id") == "fatturazione-id-nazione") {
+            if($(this).val() == NAZIONE_ITALIA) {
+                $("#fatturazione-piva").removeAttr("required");
+                $("#fatturazione-piva").attr("required","required");
+                $("#fatturazione-piva-label").html($("#piva_required_label").html());
+                $("#fatturazione-piva").attr("placeholder",$("#piva_required_label").html());
+            } else {
+                $("#fatturazione-piva").removeAttr("required");
+                $("#fatturazione-piva-label").html($("#piva_not_required_label").html());
+                $("#fatturazione-piva").attr("placeholder",$("#piva_not_required_label").html());
+            }
+        }
+
+        load_cart_draft();
+        load_check_out_dates();
+    });
+    $(".country-select").trigger("change");
+
+    $(".destinazione-select").change(function () {
+
+        var id = "";
+       if($(this).is(":checked")) {
+           id = $(this).attr("id");
+       } else {
+           $($(this).parent().data("target")).fadeOut( 50,function () { $(this).removeClass("show")});
+       }
+       if(id != "") {
+           var o = $(".destinazione-select");
+           for(var i= 0; i<o.length;i++){
+               if( $(o[i]).is(":checked")) {
+                   count_checked++;
+                   $($(o[i]).parent().data("target")).fadeIn(200,function () { $(this).addClass("show"); });
+               } else {
+                   $($(o[i]).parent().data("target")).fadeOut( 50,function () { $(this).removeClass("show")});
+               }
+               if( $(o[i]).is(":checked") && $(o[i]).attr("id") != id) {
+                   $(o[i]).trigger("click");
+                   $($(o[i]).parent().data("target")).fadeOut( 50,function () { $(this).removeClass("show")});
+               }
+           }
+
+       }
+        var count_checked = 0;
+        var o = $(".destinazione-select");
+        for(var i= 0; i<o.length;i++) {
+            if ($(o[i]).is(":checked")) {
+                count_checked++;
+            }
+        }
+        if(count_checked == 0 && $("#indirizzo-selezionato-enable").length > 0) {
+            if(indirizzo_change_timeout) clearTimeout(indirizzo_change_timeout);
+
+            indirizzo_change_timeout = setTimeout(function () {
+
+                $(o[0]).trigger("click");
+            }, 100);
+        } else {
+            if($("#fatturazione-id-tipo-privato").length && $("#fatturazione-id-tipo-privato").is(":checked")) {
+                if(count_checked > 0) {
+                    $(".spedizione-default").hide();
+                } else {
+                    $(".spedizione-default").show();
+                }
+            }
+        }
+       setTimeout(function () { load_cart_draft(); load_check_out_dates();}, 250);
+    });
+
+    $("#checkout-form-submit").click(function () {
+        $("#checkout-shipping-date-controls").submit();
+    });
+
+    $("#checkout-form-submit-popup").click(function () {
+        if($("#checkout-form").valid()) {
+            $(".checkout-datepicker").val("");
+            $("#checkout-shipping-container").hide();
+            $("#checkout-shipping-start").html("-");
+            $("#checkout-shipping-end").html("-");
+
+            if($('input[name=fatturazione-ritiro-spedizione]:checked', '#checkout-form').val() == "ritiro") {
+                $(".prosegui-acquisto-spedizione").hide();
+                $(".prosegui-acquisto-ritiro").show();
+                $("#prosegui-acquisto-container").removeClass("col-lg-5");
+                $("#prosegui-acquisto-container").addClass("col-lg-8");
+            } else {
+                $(".prosegui-acquisto-ritiro").hide();
+                $(".prosegui-acquisto-spedizione").show();
+                $("#prosegui-acquisto-container").addClass("col-lg-5");
+                $("#prosegui-acquisto-container").removeClass("col-lg-8");
+            }
+
+
+            $.fancybox.open({
+                'src'   : '#prosegui-acquisto',
+                'titleShow'  : false,
+                "touch": false,
+                afterShow: function () {
+
+
+                    $(".pagamento-select").each(function () {
+                        if(!$(this).is(":checked")) {
+                            $("#datetime-"+$(this).attr("id")).hide();
+                        } else {
+                            $("#datetime-"+$(this).attr("id")).show();
+                        }
+                    });
+                }
+            });
+
+        } else {
+
+        }
+
+    });
+
+    $(".checkout-datepicker").on("change.datetimepicker",function () {
+        $.get(url_application_carrello,"action=calculate-shipping-dates&x="+$(this).val() , function (response) {
+            if(response['status']) {
+
+                $("#checkout-shipping-start").html(response["start-date"]);
+                $("#checkout-shipping-end").html(response["end-date"]);
+                $("#checkout-shipping-container").fadeIn();
+            }
+        }, "json");
+    });
+
+    $(".pagamento-select").change(function (event) {
+        $(".pagamento-select").each(function () {
+           if(!$(this).is(":checked")) {
+               $("#datetime-pagamento-"+$(this).attr("id")).hide();
+               $("#collapse-"+$(this).attr("id")).hide();
+           } else {
+               $("#collapse-"+$(this).attr("id")).fadeIn();
+               $("#datetime-pagamento-"+$(this).attr("id")).show();
+           }
+        });
+        setTimeout(function () { load_cart_draft(); load_check_out_dates();}, 250);
+    });
+
+    function setup_visible_fields() {
+        if($('input[name="fatturazione-ritiro-spedizione"]:checked').val() == "spedizione") {
+            $(".spedizione").css("display","flex");
+            if($('input[name="fatturazione-id-tipo"]:checked').val() == "2") {
+                $(".azienda").css("display","flex");
+            } else {
+                $(".privato").css("display","flex");
+                $(".azienda").not(".privato").hide();
+                setTimeout(function () {
+                    $(".spedizione").css("display","flex");
+                },100);
+
+            }
+        } else {
+            $(".spedizione").hide();
+            if($('input[name="fatturazione-id-tipo"]:checked').val() == "2") {
+                $(".azienda").css("display","flex");
+            } else {
+                $(".azienda").hide();
+            }
+        }
+
+
+    }
+
+    $(".fatturazione-id-tipo").change(function () {
+        setup_visible_fields();
+        load_cart_draft();
+    });
+
+    $(".fatturazione-ritiro-spedizione").change(function () {
+        setup_visible_fields();
+        load_cart_draft();
+        load_check_out_dates();
+    });
+
+    if($(".spedizione-id_destinazione").length) {
+        $(".spedizione-id_destinazione").change(function () {
+            load_cart_draft();
+        });
+    }
+
+
+    $("#checkout-shipping-date-controls").validate({
+        submitHandler: function () {
+            $.fancybox.close();
+            $("#checkout-form-continua").hide();
+            $("#checkout-form-submit-popup").hide();
+            $('#checkout-form-submit').attr('disabled', 'true');
+            $('#checkout-form-status').html($("#checkout-form-progress").html());
+            $.post(url_application_carrello+"?action=checkout", $("#checkout-form").serialize()+"&"+$("#checkout-shipping-date-controls").serialize(), function (response) {
+                if(response['status']) {
+
+
+                    $('#checkout-form-submit').remove();
+                    $('#checkout-form-status').html($("#checkout-form-success").html());
+                    setTimeout(function () {
+                        if(typeof response['html'] !== 'undefined') {
+
+
+
+                            $('body').append(response['html']);
+
+
+                            if(typeof prefireConversionEvents === "function") {
+                                prefireConversionEvents();
+                                setTimeout(function () {
+                                    $("#pos_online_form").submit();
+                                }, 1000);
+                            } else {
+                                $("#pos_online_form").submit();
+                            }
+                        } else {
+                            document.location.href = response['url'];
+                        }
+                    }, 1000);
+                } else {
+                    $("#checkout-form-continua").show();
+                    $("#checkout-form-error-message").html(response['errmsg']);
+                    $('#checkout-form-status').html($("#checkout-form-error").html());
+                    $("#checkout-form-submit-popup").show();
+                    $('#checkout-form-submit').removeAttr('disabled');
+                }
+            }, "json");
+
+            return false;
+        }
+    });
+
+
+    $("#checkout-form").validate({
+        errorPlacement: function(error, element) {
+            if($(element).attr("id") == "fatturazione-id-tipo-privato") {
+                error.insertAfter($("#fatturazione-id-tipo-label"));
+            } else if($(element).attr("id") == "fatturazione-ritiro-spedizione-ritiro") {
+                error.insertAfter($("#fatturazione-ritiro-spedizione-label"));
+
+            } else if($(element).attr("id") == "checkout-termin-condizioni") {
+
+                error.insertAfter($(element).parent());
+            } else {
+                error.insertAfter(element);
+            }
+
+        },
+        rules: {
+            "fatturazione-telefono": {
+                required: true,
+                telefono_valido: true
+            },
+            "destinatario-telefono": {
+                required: true,
+                telefono_valido: true
+            },
+
+            "fatturazione-piva": {
+                caratterivalidi: true,
+                piva_valida: true
+            },
+            "fatturazione-rag-soc": {
+                caratterivalidi: true
+            },
+            "fatturazione-sdi": {
+                require_from_group: [1, ".fatturazione-elettronica"],
+                caratterivalidi: true,
+                minlength: 7,
+                maxlength: 7
+            },
+            "fatturazione-pec": {
+                require_from_group: [1, ".fatturazione-elettronica"],
+                caratterivalidi: true
+            },
+            "destinatario-cap": {
+                required: true,
+                cap_valido: true,
+                caratterivalidi: true
+            },
+            "spedizione-cap": {
+                required: true,
+                cap_valido: true,
+                caratterivalidi: true
+            },
+            "fatturazione-cap": {
+                required: true,
+                cap_valido: true,
+                caratterivalidi: true
+            },
+
+            "fatturazione-indirizzo": {
+                caratterivalidi: true,
+                maxlength: 50
+            },
+            "fatturazione-civico": {
+                caratterivalidi: true,
+                maxlength: 8
+            },
+            "fatturazione-specifiche": {
+                caratterivalidi: true,
+                maxlength: 50
+            },
+            "fatturazione-provincia-text": {
+                caratterivalidi: true,
+                maxlength: 30
+            },
+            "fatturazione-comune-text": {
+                caratterivalidi: true,
+                maxlength: 30
+            },
+            "spedizione-presso": {
+                caratterivalidi: true,
+                maxlength: 24
+            },
+            "spedizione-nome": {
+                caratterivalidi: true,
+                maxlength: 25
+            },
+            "spedizione-cognome": {
+                caratterivalidi: true,
+                maxlength: 25
+            },
+            "spedizione-indirizzo": {
+                caratterivalidi: true,
+                maxlength: 30
+            },
+            "spedizione-suonare": {
+                caratterivalidi: true,
+                maxlength: 15
+            },
+            "spedizione-civico": {
+                caratterivalidi: true,
+                maxlength: 8
+
+            },
+            "spedizione-specifiche": {
+                caratterivalidi: true,
+                maxlength: 60
+            },
+            "spedizione-provincia-text": {
+                caratterivalidi: true,
+                maxlength: 30
+            },
+            "spedizione-comune-text": {
+                caratterivalidi: true,
+                maxlength: 30
+            },
+            "destinatario-presso": {
+                caratterivalidi: true,
+                maxlength: 24
+            },
+            "destinatario-nome": {
+                caratterivalidi: true,
+                maxlength: 25
+            },
+            "destinatario-cognome": {
+                caratterivalidi: true,
+                maxlength: 25
+            },
+            "destinatario-indirizzo": {
+                caratterivalidi: true,
+                maxlength: 30
+            },
+            "destinatario-suonare": {
+                caratterivalidi: true,
+                maxlength: 15
+            },
+            "destinatario-specifiche": {
+                caratterivalidi: true,
+                maxlength: 60
+            },
+            "destinatario-provincia-text": {
+                caratterivalidi: true,
+                maxlength: 30
+            },
+            "destinatario-comune-text": {
+                caratterivalidi: true,
+                maxlength: 30
+            },
+
+        },
+        submitHandler: function () {
+            /*
+            $("#checkout-form-continua").hide();
+            $('#checkout-form-submit').attr('disabled', 'true');
+            $('#checkout-form-status').html($("#checkout-form-progress").html());
+            $.post(url_application_carrello+"?action=checkout", $("#checkout-form").serialize(), function (response) {
+                if(response['status']) {
+                    $('#checkout-form-submit').remove();
+                    $('#checkout-form-status').html($("#checkout-form-success").html());
+                    setTimeout(function () {
+                        if(typeof response['html'] !== 'undefined') {
+                            $('body').append(response['html']);
+                            $("#pos_online_form").submit();
+                        } else {
+                            document.location.href = response['url'];
+                        }
+                    }, 1000);
+                } else {
+                    $("#checkout-form-continua").show();
+                    $("#checkout-form-error-message").html(response['errmsg']);
+                    $('#checkout-form-status').html($("#checkout-form-error").html());
+                    $('#checkout-form-submit').removeAttr('disabled');
+                }
+            }, "json");
+            */
+            return false;
+        }
+    });
+
+    if($(".checkout-ordine-draft").length) {
+        load_cart_draft();
+        load_check_out_dates();
+    }
+
+    if($(".clone-ord-btn").length) {
+        $(".clone-ord-btn").click(function () {
+            $(".clone-ord-btn").html(str_attendere_prego);
+            $("#clone-ord-message").show();
+            clone_order($(this).attr("rel-ord"),function () {
+                $("#clone-ord-message").hide();
+                $(".clone-ord-btn").html(str_comprali_di_nuovo);
+            });
+        });
+    }
+
+
+    if($(".detail-ord-btn").length) {
+        $("#dettaglio-ordine-container").html("...");
+        $(".detail-ord-btn").click(function () {
+            $.post(url_application_carrello,"action=detail_order&x="+$(this).attr("rel-ord") , function (response) {
+                if(response['status']) {
+                    $("#dettaglio-ordine-container").html(response['html']);
+                    $.fancybox.open({
+                        'src'   : '#dettaglio-ordine',
+                        'titleShow'  : false,
+                    });
+                }
+            }, "json");
+        });
+    }
+
+    if($(".doc-ord-btn").length) {
+        $(".doc-ord-btn").click(function () {
+            doc_order($(this).attr("rel-ord"))
+
+        });
+    }
+
+    if($(".doc-ord-btn-request").length) {
+        $(".doc-ord-btn-request").click(function () {
+            var o = $(this);
+            o.html(str_attendere_prego);
+            $.post(url_application_carrello,"action=document_resend&x="+$(this).attr("rel-ord") , function (response) {
+                if(response['status']) {
+                    o.html("");
+                    Swal.fire({
+                        title: "",
+                        text: response['html'],
+                        confirmButtonText: 'Ok'
+                    });
+                } else {
+                    Swal.fire({
+                        title: str_attenzione,
+                        text: response['errmsg'],
+                        confirmButtonText: 'Ok'
+                    });
+                }
+            }, "json");
+
+        });
+    }
+
+    if($("#ordina-altro-button").length) {
+        $('[data-fancybox="ordina-altro"]').fancybox({
+            afterClose  : function() {
+                document.location.reload();
+            }
+        });
+    }
+
+    if($("#promozioni-attive-button").length) {
+        $('[data-fancybox="promozioni-attive"]').fancybox({
+            beforeShow  : function() {
+                $("#promozioni-attive-container").html();
+                $.get(url_application_carrello,"action=promo_active_list" , function (response) {
+                    if(response['status']) {
+                        $("#promozioni-attive-container").html(response['html']);
+                    }
+                }, "json");
+            }
+        });
+    }
+
+    if($(".fast-ord-btn").length) {
+        $(".fast-ord-btn").click(function () {
+                $.post(url_application_carrello,"action=fast_order" , function (response) {
+                    if(response['status']) {
+                        load_cart_header(function () {
+                            $.fancybox.open({
+                                'src'   : '#ordine-veloce',
+                                'titleShow'  : false,
+                            });
+                        });
+                    } else {
+                        $.fancybox.open({
+                            'src'   : '#shop-chiuso',
+                            'titleShow'  : false,
+                        });
+                    }
+                }, "json");
+        });
+    }
+
+    if($(".promo-form-submit").length) {
+        $(".promo-form-submit").click(function () {
+            $('#promo-form-submit').attr('disabled', 'true');
+            $('#promo-form-status').html($("#promo-form-progress").html());
+            $.post(url_application_carrello+"?action=promo_apply", {id_promozione: $('#promo-form-submit').attr("rel-promo")}, function (response) {
+                if(response['status']) {
+                    $('#promo-form-submit').remove();
+                    $('#promo-form-status').html($("#promo-form-success").html());
+
+                    setTimeout(function () {
+                        $(".promo-form-container").remove();
+                        $(".coupon-form-container").remove();
+                        $('#promo-form-status').html("");
+                        load_cart_draft()
+                    }, 1000);
+                } else {
+                    $("#promo-form-error-message").html(response['errmsg']);
+                    $('#promo-form-status').html($("#promo-form-error").html());
+                    $('#promo-form-submit').removeAttr('disabled');
+                }
+            }, "json");
+        })
+    }
+    if($("#alerting-popup").length) {
+        $.fancybox.open({
+            'src'   : '#alerting-popup',
+            'titleShow'  : true,
+        });
+    }
+    start_session_wakeup();
+});

@@ -1,0 +1,134 @@
+$(document).ready(function () {
+   $("#rivenditori_search_starter").click(function () {
+        $("#rivenditori_container").html($("#rivenditori_loader").html())
+        $.post( url_application_rivenditori,
+           {
+               search: true,
+               str: $("#rivenditori_search_str").val(),
+               lat: $("#rivenditori_search_lat").val(),
+               lon: $("#rivenditori_search_lon").val(),
+               radius: $("#rivenditori_search_radius").val(),
+           },
+           function (revtal) {
+                if(revtal['status']) {
+
+                    setTimeout(function () {
+                        $("#rivenditori_container").html(revtal['html']);
+                        gMapPlaceMarkers();
+
+
+                    }, 500);
+
+                } else {
+                    $("#rivenditori_error_message").html(revtal['errmsg']);
+                    $("#rivenditori_container").html($("#rivenditori_error").html())
+                }
+
+            }, 'json');
+        send_gtag_data("event","ricerca_rivenditori", { "search_term": $("#rivenditori_search_str").val()} );
+        send_facebook_data('track', 'Search');
+        send_ads_data('event', 'conversion', { 'send_to': 'AW-411484714/Djy9CNTnwdoDEKqEm8QB'});
+    });
+});
+
+$(document).ready(function () {
+    $("#form-contatti").validate({
+        rules: {
+            "contatti-telefono": {
+                telefono_valido_o_vuoto: true
+            },
+        },
+        errorPlacement: function(error, element) {
+            if($(element).attr("id") == "contatti-privacy") {
+                error.insertAfter($(element).parent());
+            } else {
+                error.insertAfter(element);
+            }
+        },
+        submitHandler: function () {
+            $('#form-contatti-submit').attr('disabled', 'true');
+            $('#form-contatti-status').html($("#form-contatti-progress").html());
+            $.post(url_application_contatti, $("#form-contatti").serialize(), function (response) {
+
+                if(response['status']) {
+                    $('#form-contatti-submit').remove();
+                    $('#form-contatti-status').html($("#form-contatti-success").html());
+                    send_gtag('event', 'richiestaInformazioni');
+                } else {
+                    $("#form-contatti-error-message").html(response['errmsg']);
+                    $('#form-contatti-status').html($("#form-contatti-error").html());
+                    $('#form-contatti-submit').removeAttr('disabled');
+                }
+            }, "json");
+            return false;
+        }
+    });
+
+    $("#form-rivenditori").validate({
+        rules: {
+            "contatti-telefono": {
+                telefono_valido_o_vuoto: true
+            },
+        },
+        errorPlacement: function(error, element) {
+            if($(element).attr("id") == "contatti-privacy") {
+                error.insertAfter($(element).parent());
+            } else {
+                error.insertAfter(element);
+            }
+        },
+        submitHandler: function () {
+            $('#form-contatti-submit').attr('disabled', 'true');
+            $('#form-contatti-status').html($("#form-contatti-progress").html());
+            $.post(url_application_contatti, $("#form-rivenditori").serialize(), function (response) {
+                if(response['status']) {
+                    $('#form-contatti-submit').remove();
+                    $('#form-contatti-status').html($("#form-contatti-success").html());
+                    send_gtag('event', 'generate_lead');
+                    if(typeof fbq !== "undefined") fbq('track', 'Lead');
+                    if(typeof gtag !== "undefined") gtag('event', 'conversion', {'send_to': 'AW-411484714/zyXHCOGloKAYEKqEm8QB'});
+                } else {
+                    $("#form-contatti-error-message").html(response['errmsg']);
+                    $('#form-contatti-status').html($("#form-contatti-error").html());
+                    $('#form-contatti-submit').removeAttr('disabled');
+                }
+            }, "json");
+            return false;
+        }
+    });
+
+    /** modifica 20230921 */
+    $("#form-aziende").validate({
+        rules: {
+            "contatti-telefono": {
+                telefono_valido_o_vuoto: true
+            },
+        },
+        errorPlacement: function(error, element) {
+            if($(element).attr("id") == "contatti-privacy") {
+                error.insertAfter($(element).parent());
+            } else {
+                error.insertAfter(element);
+            }
+        },
+        submitHandler: function () {
+            $('#form-contatti-submit').attr('disabled', 'true');
+            $('#form-contatti-status').html($("#form-contatti-progress").html());
+            $.post(url_application_contatti, $("#form-aziende").serialize(), function (response) {
+                if(response['status']) {
+                    $('#form-contatti-submit').remove();
+                    $('#form-contatti-status').html($("#form-contatti-success").html());
+                    send_gtag('event', 'generate_lead');
+                    if(typeof fbq !== "undefined") fbq('track', 'Lead');
+                    if(typeof gtag !== "undefined") gtag('event', 'conversion', {'send_to': 'AW-411484714/q2VXCIDihuMYEKqEm8QB'});
+                } else {
+                    $("#form-contatti-error-message").html(response['errmsg']);
+                    $('#form-contatti-status').html($("#form-contatti-error").html());
+                    $('#form-contatti-submit').removeAttr('disabled');
+                }
+            }, "json");
+            return false;
+        }
+    });
+});
+
